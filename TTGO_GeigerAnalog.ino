@@ -1,5 +1,5 @@
 /*Based on original code by juliaandwillett: https://create.arduino.cc/projecthub/juliandwillett/customizable-geiger-muller-counter-e847d1 */
-
+/* Analog Gauge Code by Bodmer https://github.com/Bodmer */
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -13,7 +13,7 @@
 #define TFT_ORANGE      0xFD20      /* 255, 165,   0 */
 #define ADC_EN              14  //ADC_EN is the ADC detection enable port
 #define ADC_PIN             34
-#define BUTTON_1            35 /*No buttons used yet*/
+#define BUTTON_1            35 //Button1 - Longpress for Deepsleep
 #define BUTTON_2            0
 #define LOG_PERIOD 1000 // count rate (in milliseconds)
 
@@ -61,7 +61,7 @@ void setup() {
 
 
 void loop() {
-  buttonB.loop();
+  buttonB.loop(); //Monitor loop for Button press
   if (updateTime <= millis()) {
     updateTime = millis() + 35; // Update meter every 35 milliseconds
     value[0] = bufCounts;
@@ -279,7 +279,7 @@ void impulse() {
     float y = x * 0.0057;
     return y;
   }
-  void longpress(Button2& btn) {
+  void longpress(Button2& btn) {  //Longpress for Deepsleep
     unsigned int time = btn.wasPressedFor();
     Serial.print("DeepSleep Init");
     if (time > 1000) {
