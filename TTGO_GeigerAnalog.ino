@@ -6,6 +6,7 @@
 #include "WiFi.h"
 #include <Wire.h>
 #include "Button2.h"
+#include "Arduino.h"
 
 #define M_SIZE 1.067 // Define meter size
 #define TFT_GREY 0x5AEB
@@ -14,7 +15,7 @@
 #define ADC_PIN             34
 #define BUTTON_1            35 /*No buttons used yet*/
 #define BUTTON_2            0
-#define LOG_PERIOD 2000 // count rate (in milliseconds)
+#define LOG_PERIOD 1000 // count rate (in milliseconds)
 
 float ltx = 0;    // Saved x coord of bottom of needle
 uint16_t osx = M_SIZE*120, osy = M_SIZE*120; // Saved x & y coords
@@ -30,8 +31,8 @@ float CPMArray[100];
 int maxCPM;
 int vref = 1100;
 TFT_eSPI tft = TFT_eSPI(135, 240); // Invoke custom TFT LCD library
-Button2 btn1(BUTTON_1);
-Button2 btn2(BUTTON_2);
+//Button2 btn1(BUTTON_1);
+Button2 buttonB = Button2(BUTTON_1);
 char buff[512];
 
 int old_analog =  -999; // Value last displayed
@@ -53,14 +54,14 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   pinMode(2, INPUT); //set pins for Geiger Signal
   attachInterrupt(digitalPinToInterrupt(2), impulse, FALLING); //define external interrupts
-
+  buttonB.setLongClickHandler(longpress);
   analogMeter(); // Draw analogue meter
-
   updateTime = millis(); // Next update time
 }
 
 
 void loop() {
+  buttonB.loop();
   if (updateTime <= millis()) {
     updateTime = millis() + 35; // Update meter every 35 milliseconds
     value[0] = bufCounts;
@@ -278,5 +279,10 @@ void impulse() {
     float y = x * 0.0057;
     return y;
   }
-  
-  
+  void longpress(Button2& btn) {
+    unsigned int time = btn.wasPressedFor();
+    Serial.print("DeepSleep Init");
+    if (time > 1000) {
+     esp_deep_sleep_start();     
+    }
+}
